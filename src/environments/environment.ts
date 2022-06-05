@@ -10,4 +10,6 @@
 
 export const environment = {
   production: false,
+  app_name: 'CMS',
+  base_endpoint: 'http://localhost:3000/',
 };

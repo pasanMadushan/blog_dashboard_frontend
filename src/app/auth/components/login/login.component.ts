@@ -1,15 +1,64 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { NbAuthResult, NbAuthService, NbLoginComponent } from '@nebular/auth';
+import { NbToastrService } from '@nebular/theme';
+import { Subscription } from 'rxjs';
+import { LoginModel } from '../../models/login.model';
 
 @Component({
-  selector: 'ngx-login',
+  selector: 'user-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent extends NbLoginComponent implements OnDestroy {
 
-  constructor() { }
+  protected service: NbAuthService;
+  protected options: {};
+  protected detector: ChangeDetectorRef;
+  protected router: Router;
 
-  ngOnInit(): void {
+  user:LoginModel = new LoginModel();
+
+  subscriptions: Subscription[] = [];
+
+  constructor(service: NbAuthService, detector: ChangeDetectorRef, router: Router, private toastrService: NbToastrService) {
+    super(service, {
+      forms: {
+        validation: {
+          email: { required: true },
+          password: { required: true }
+        },
+        login: {
+          showMessages: true,
+        }
+      },
+
+    }, detector, router);
+  }
+
+  login(): void {
+    this.subscriptions.push(
+      this.service.authenticate('email', this.user).subscribe((result: NbAuthResult) => {
+        if (result.isSuccess()) {
+          this.router.navigate([result.getRedirect()]);
+          this.toastrService.success('Success!', 'Successfully logged in')
+        } else {
+          const response: HttpErrorResponse = result.getResponse();
+          if (response.status === 401) {
+            this.toastrService.danger('You are not authorized!', 'Authorization Error')
+          } else {
+            this.toastrService.danger('Invalid Credentials!', 'Login Error')
+          }
+        }
+      })
+    )
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub: Subscription) => {
+      sub.unsubscribe();
+    })
   }
 
 }
