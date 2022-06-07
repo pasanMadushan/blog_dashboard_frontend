@@ -118,7 +118,7 @@ export const NB_CORE_PROVIDERS = [
           endpoint:'api/user/login',
           method:'post',
           redirect:{
-            success:'pages',
+            success:'',
             failure:''
           }
         }

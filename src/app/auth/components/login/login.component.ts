@@ -39,17 +39,13 @@ export class LoginComponent extends NbLoginComponent implements OnDestroy {
 
   login(): void {
     this.subscriptions.push(
-      this.service.authenticate('email', this.user).subscribe((result: NbAuthResult) => {
+      this.service.authenticate('email', this.user).subscribe((result:NbAuthResult) => {
         if (result.isSuccess()) {
           this.router.navigate([result.getRedirect()]);
           this.toastrService.success('Success!', 'Successfully logged in')
         } else {
           const response: HttpErrorResponse = result.getResponse();
-          if (response.status === 401) {
-            this.toastrService.danger('You are not authorized!', 'Authorization Error')
-          } else {
-            this.toastrService.danger('Invalid Credentials!', 'Login Error')
-          }
+          this.toastrService.danger('Login Failed!', response.error)
         }
       })
     )
